@@ -593,7 +593,13 @@ class DateTimePickerModel extends CommonPickerModel {
   void setMiddleIndex(int index) {
     super.setMiddleIndex(index);
     DateTime time = currentTime.add(Duration(days: _currentLeftIndex));
-    if (isAtSameDay(minTime, time) && index == 0) {
+    if (isAtSameDay(minTime, maxTime) && (_currentMiddleIndex + minTime!.hour) >= maxTime!.hour) {
+      var maxIndex = maxTime!.minute;
+      if (_currentRightIndex > maxIndex) {
+        _currentRightIndex = maxIndex;
+      }
+    }
+    else if (isAtSameDay(minTime, time) && index == 0) {
       var maxIndex = 60 - minTime!.minute - 1;
       if (_currentRightIndex > maxIndex) {
         _currentRightIndex = maxIndex;
@@ -626,7 +632,14 @@ class DateTimePickerModel extends CommonPickerModel {
   String? middleStringAtIndex(int index) {
     if (index >= 0 && index < 24) {
       DateTime time = currentTime.add(Duration(days: _currentLeftIndex));
-      if (isAtSameDay(minTime, time)) {
+      if (isAtSameDay(minTime, maxTime)) {
+        if (index >= 0 && index < (maxTime!.hour+1) - minTime!.hour) {
+          return digits(minTime!.hour + index, 2);
+        } else {
+          return null;
+        }
+      }
+      else if (isAtSameDay(minTime, time)) {
         if (index >= 0 && index < 24 - minTime!.hour) {
           return digits(minTime!.hour + index, 2);
         } else {
@@ -649,7 +662,30 @@ class DateTimePickerModel extends CommonPickerModel {
   String? rightStringAtIndex(int index) {
     if (index >= 0 && index < 60) {
       DateTime time = currentTime.add(Duration(days: _currentLeftIndex));
-      if (isAtSameDay(minTime, time) && _currentMiddleIndex == 0) {
+      if (isAtSameDay(minTime, maxTime) && (_currentMiddleIndex + minTime!.hour) >= maxTime!.hour) {
+        if (isAtSameDay(minTime, time) && _currentMiddleIndex == 0) {
+          if (index >= 0 && index < 60 - minTime!.minute) {
+            int digs = int.parse(digits(minTime!.minute + index, 2));
+            if (digs <= maxTime!.minute) {
+              return digits(minTime!.minute + index, 2);
+            }
+            else {
+              return null;
+            }
+          } else {
+            return null;
+          }
+        }
+        else if (isAtSameDay(maxTime, time) && (_currentMiddleIndex + minTime!.hour) >= maxTime!.hour) {
+          if (index >= 0 && index <= maxTime!.minute) {
+            return digits(index, 2);
+          } else {
+            return null;
+          }
+        }
+        return digits(index, 2);
+      }
+      else if (isAtSameDay(minTime, time) && _currentMiddleIndex == 0) {
         if (index >= 0 && index < 60 - minTime!.minute) {
           return digits(minTime!.minute + index, 2);
         } else {
